@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101413"><title>SPLAT RACE</title><link rel="stylesheet" href="./app.css"></head>
+<body>
+<main class="game-shell">
+<aside id="left-panel" class="side-panel left-panel" aria-label="레이스 보드와 경기 조작">
+  <button class="panel-toggle" id="left-toggle" aria-controls="left-panel" aria-expanded="true">레이스 · 접기</button>
+  <div class="arena-toolbar"><span class="live-dot" id="live-dot"></span><b id="race-state">READY</b><span id="race-clock">00:00</span><span id="finish-count">GOAL — / —</span></div>
+  <details class="side-list" open><summary><h2>레이스 보드</h2></summary><div id="roster" class="roster"><p class="empty">경기를 시작하면 참가자가 표시됩니다.</p></div></details>
+  <div class="side-controls">
+    <p id="message" role="status" aria-live="polite"></p>
+    <nav class="control-dock" aria-label="경기 조작">
+      <button class="primary" type="submit" form="race-form" id="start">경기 시작</button>
+      <button id="race-share" type="button" disabled>경기 링크 복사</button>
+      <button id="pause" type="button" disabled>일시정지</button>
+      <button id="setup-open" type="button">참가자·경기</button>
+      <label for="map-select">맵</label><select id="map-select" aria-label="다음 경기 맵"></select>
+      <button id="settings-open" type="button">설정</button>
+    </nav>
+  </div>
+</aside>
+<section class="arena" aria-label="마블 경기 코스">
+  <div class="canvas-wrap"><div id="race-cue" role="status" aria-live="polite" hidden></div><canvas id="course" aria-label="세로형 장애물 코스와 참가자 구슬"></canvas><div id="ready-tag" class="ready-tag"><strong>SPLAT RACE</strong><button id="ready-setup" type="button">참가자 설정</button></div></div>
+</section>
+<aside id="right-panel" class="side-panel right-panel" aria-label="킬 로그와 카메라">
+  <button class="panel-toggle" id="right-toggle" aria-controls="right-panel" aria-expanded="true">카메라 · 접기</button>
+  <details class="side-list" open><summary><h2>킬 로그</h2></summary><div id="kill-log" class="log" aria-label="킬 및 스페셜 로그"></div></details>
+  <div class="side-controls camera-controls">
+    <details class="record-controls" open><summary>녹화 품질</summary><select id="record-format" aria-label="녹화 품질"><option value="webp">WebP · 고화질 90%</option><option value="webp-small" selected>WebP · 20MB 이하</option><option value="mp4">MP4 · 고화질 60fps</option></select><p id="record-status" role="status" hidden></p><a id="record-download" hidden>녹화 파일 다운로드</a></details>
+    <div class="camera-bar"><label for="follow">카메라</label><select id="follow"><option value="leader">선두 추적</option><option value="leader-plus" selected>선두 추적 +</option><option value="all">코스 전체</option><option value="free">자유 카메라</option></select></div>
+    <div class="zoom-bar"><label for="zoom">줌</label><input id="zoom" type="range" min="50" max="150" value="70" step="5"><output id="zoom-value" for="zoom">70%</output></div>
+    <p id="camera-help" class="hint" hidden>게임 화면을 스크롤하거나 위아래로 드래그하세요.</p>
+  </div>
+</aside>
+</main>
+<dialog id="race-setup" aria-labelledby="setup-title">
+  <div class="dialog-header"><h2 id="setup-title">참가자·경기 설정</h2><button id="setup-close" type="button" aria-label="참가자 설정 닫기">✕</button></div>
+  <form id="race-form" novalidate>
+    <div class="label-line"><label for="names">참가자</label><span id="name-count">8명</span></div>
+    <textarea id="names" rows="8" spellcheck="false">오징어\n문어\n잉클링\n옥토링\n버킷\n롤러\n차저\n붓</textarea>
+    <div class="input-pair"><label>골인 인원 N<input id="winners" type="number" min="1" value="3" required></label><label>랜덤 시드<input id="seed" type="number" min="0" max="4294967295" value="20261027" required></label></div>
+    <button id="new-seed" type="button">새 시드</button>
+    <p id="setup-error" class="error" role="alert"></p>
+    <button class="primary" type="submit">입력한 참가자로 시작</button>
+  </form>
+</dialog>
+<dialog id="restart-confirm" aria-labelledby="restart-title"><h2 id="restart-title">진행 중인 경기를 다시 시작할까요?</h2><p class="hint">현재 진행 상황은 사라집니다. 같은 시드로 다시 시작합니다.</p><div class="result-actions"><button id="restart-cancel" autofocus>취소</button><button id="restart-yes">다시 시작</button></div></dialog>
+<dialog id="settings"><div class="dialog-header"><h2>설정</h2><button id="settings-close" aria-label="설정 닫기">✕</button></div>
+<div class="settings-actions"><button id="map-open" type="button">맵 에디터</button></div>
+<form id="presentation-form"><fieldset class="settings-group"><legend>일반 설정</legend><div class="field-grid"><label>출발 카운트다운 (초)<input id="countdown-seconds" type="number" min="0" max="10" step="0.5" required></label><label>골인 후 결과 대기 (초)<input id="result-delay" type="number" min="0" max="10" step="0.5" required></label></div><p class="hint">0초로 설정하면 연출을 건너뜁니다. 다음 경기부터 적용됩니다.</p><p id="presentation-error" class="error" role="alert"></p><button type="submit">일반 설정 저장</button></fieldset></form>
+<details id="advanced-settings"><summary>고급 밸런스</summary><p class="hint">수치는 다음 경기부터 적용됩니다. 저장하면 이 브라우저에 유지됩니다.</p><div class="settings-actions"><button id="export">JSON 내보내기</button><label class="file-button">JSON 가져오기<input type="file" id="import" accept=".json,application/json"></label><button id="defaults">기본값 불러오기</button></div><p id="settings-error" class="error" role="alert"></p><form id="settings-form"><div id="settings-fields"></div><div class="settings-footer"><button class="primary" type="submit">밸런스 저장 · 다음 경기에 적용</button></div></form></details></dialog>
+<dialog id="results" aria-label="경기 결과"><div class="table-wrap" tabindex="-1" autofocus aria-label="결과표"><table><thead><tr><th>순위</th><th>참가자</th><th>스페셜 / 서브</th><th>기록</th><th>K&lt;A&gt; D S</th></tr></thead><tbody id="result-body"></tbody></table></div><p id="result-progress" class="hint" role="status" aria-live="polite"></p><div class="result-actions"><button id="results-share" type="button">경기 링크 복사</button><button id="results-image" type="button" disabled>결과 이미지 저장</button><button id="results-download" type="button" disabled>녹화된 영상 없음</button><button id="results-close" type="button" class="quiet">닫기</button><button id="results-again" type="button">경기 다시보기</button><button id="results-new-seed" type="button">새로운 시드로 다시 경기하기</button></div></dialog>
+
+<dialog id="share-dialog" aria-labelledby="share-title"><div class="dialog-header"><h2 id="share-title">경기 공유</h2><button id="share-close" type="button" aria-label="경기 공유 닫기">✕</button></div><p id="share-info" style="white-space:pre-wrap"></p><label id="share-link-label" hidden>공유 링크<textarea id="share-link" readonly rows="3"></textarea></label><p id="share-feedback" role="status"></p><div class="result-actions"><button id="share-play" type="button" hidden>이 경기 시작</button><button id="share-copy" type="button" hidden>링크 복사</button></div></dialog>
+<dialog id="map-editor" aria-labelledby="map-title">
+ <div class="dialog-header"><h2 id="map-title">맵 에디터</h2><button id="map-close" type="button" aria-label="맵 에디터 닫기">✕</button></div>
+ <div class="map-toolbar"><select id="map-library" aria-label="편집할 맵"></select><button id="map-new">새 맵</button><button id="map-copy">복사</button><button id="map-delete-map">맵 삭제</button><button id="map-undo">실행 취소</button><button id="map-redo">다시 실행</button></div>
+ <div class="map-workspace">
+  <div id="map-viewport" tabindex="0" aria-label="맵 편집 영역"><canvas id="map-canvas" tabindex="0" aria-label="장애물을 선택하고 드래그해서 이동"></canvas></div>
+  <aside class="map-inspector">
+   <label>맵 이름<input id="map-name" maxlength="60"></label>
+   <div class="map-dimensions"><label>폭<input id="map-width" type="number" min="500" max="1400"></label><label>골인선 깊이<input id="map-height" type="number" min="2500" max="20000"></label><label>출발점 깊이<input id="map-spawnY" type="number" min="60" max="300"></label></div>
+   <label>장애물 종류<select id="map-kind"></select></label><button id="map-add">장애물 추가</button>
+   <label>장애물 목록<select id="map-objects" size="5" multiple></select></label>
+   <div class="map-toolbar"><button id="map-duplicate">장애물 복제</button><button id="map-remove">장애물 삭제</button></div>
+   <p id="map-selection-count" role="status" class="hint"></p><div id="map-properties"></div>
+   <p class="hint">Shift+클릭 또는 빈 공간 드래그로 여러 개를 선택하세요. Cmd+C / Cmd+V로 에디터 안에서 복사·붙여넣기할 수 있습니다. 본체 드래그는 이동, 흰 사각 핸들은 크기, 원형 핸들은 회전입니다. 길이·두께는 반대편을 고정하며, Shift를 누르면 중심을 고정합니다. 숫자로도 조절할 수 있습니다. 장애물 겹침은 허용됩니다. 기본 맵은 사용자 맵으로 복사해 저장합니다.</p>
+  </aside>
+ </div>
+ <p id="map-status" role="status" class="error"></p>
+ <div class="map-toolbar"><button id="map-test">시험 경기</button><button id="map-test-stop" disabled>시험 종료</button><button id="map-export">맵 JSON 내보내기</button><button id="map-export-all">목록 백업</button><label class="file-button">JSON 가져오기<input id="map-import" type="file" accept=".json,application/json"></label><button id="map-save" class="primary">저장하고 다음 경기에 적용</button></div>
+ <section id="map-test-view" hidden aria-label="시험 경기"><p id="map-test-status" role="status"></p><canvas id="map-test-canvas"></canvas></section>
+</dialog>
+<script src="./app.js" defer></script></body></html>

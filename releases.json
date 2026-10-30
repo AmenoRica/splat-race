@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "releases": [
+    {
+      "id": "v1",
+      "created": "2026-10-30T07:02:15.579Z",
+      "files": {
+        "index.html": "124579a2e14550c976b740790b36d200cc1d3ae4b6826845a9bac73e10d392c3",
+        "app.js": "207e7311f4d5ff1dac998ee8ae66c3b7648eda5919f353fbc35c89cdf4d1d886",
+        "app.css": "69a5416ef1aa8aff72a6c8cb716752194dc52f0043e6eeb4fc8f3217a564a800",
+        "default-settings.json": "b5e0e28c0260312c0c585efcbf726390288cbc8fd98051765e0e4f78be666211",
+        "MATTER-LICENSE.txt": "ed182087be5b26734aa6d4789743de3a97417950e8c1e3ff2e3d19c6462720d3",
+        "PRETENDARD-LICENSE.txt": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a"
+      }
+    }
+  ],
+  "current": "v1"
+}
